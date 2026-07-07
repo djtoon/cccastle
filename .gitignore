@@ -2,6 +2,9 @@
 .wrangler/
 worker/.wrangler/
 
+# Private internal notes — deployment/account details, keep local
+inst.md
+
 # Local secrets / auth (the castle login token lives in ~/.castle, not here — but just in case)
 .castle/
 .dev.vars
