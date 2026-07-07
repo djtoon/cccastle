@@ -91,10 +91,12 @@ leave your machine. Never your content, never file names, never prompts. Token u
 from your local session transcripts, counted per day, and only the totals are posted.
 
 Skill tracking is **hook-based by design**: the hook receives just the skill's name in its
-event payload — it never reads your conversations. Along with each skill name goes its short
-description and source (read from the skill's own frontmatter), shown on your realm page.
-Don't want skills shared? Opt out with `"skills": false` in `~/.castle/config.json` or
-`CASTLE_NO_SKILLS=1` — everything else keeps working.
+event payload — it never reads your conversations, and never captures skill arguments.
+**Only skills from installed marketplace plugins are shared** (name, uses per day, source,
+and the short description from the skill's own frontmatter — all public by nature).
+Personal and project skills **never leave your machine** unless you opt in with
+`"skillsShare": "all"` in `~/.castle/config.json`. To turn skill sharing off entirely:
+`"skills": false` there, or `CASTLE_NO_SKILLS=1` — everything else keeps working.
 
 The hooks are also **fail-silent**: offline, server down, or a weird transcript will never
 break a session — unsent counts just wait in `~/.castle/` until next time.

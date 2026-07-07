@@ -177,14 +177,26 @@ export function resolveSkillMeta(names) {
 
 export async function postUsage(cfg, days, skills) {
   const skillNames = [...new Set(Object.values(skills || {}).flatMap(d => Object.keys(d)))];
-  const meta = skillNames.length ? resolveSkillMeta(skillNames) : {};
+  const allMeta = skillNames.length ? resolveSkillMeta(skillNames) : {};
+  // Privacy default: share ONLY skills that resolve to an installed marketplace
+  // plugin (public by nature). Personal/project/unknown skills never leave the
+  // machine unless the user opts in with "skillsShare": "all" in ~/.castle/config.json.
+  const shareAll = cfg.skillsShare === "all";
+  const allowed = new Set(skillNames.filter(n =>
+    shareAll || (allMeta[n] && allMeta[n].source.includes("/"))));
+  const sharedSkills = {};
+  for (const [day, m] of Object.entries(skills || {})) {
+    const f = Object.fromEntries(Object.entries(m).filter(([n]) => allowed.has(n)));
+    if (Object.keys(f).length) sharedSkills[day] = f;
+  }
+  const meta = Object.fromEntries(Object.entries(allMeta).filter(([n]) => allowed.has(n)));
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 5000);
   try {
     const res = await fetch(cfg.server.replace(/\/$/, "") + "/api/log", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ token: cfg.token, name: cfg.name, days, skills: skills || {}, meta }),
+      body: JSON.stringify({ token: cfg.token, name: cfg.name, days, skills: sharedSkills, meta }),
       signal: ctrl.signal,
     });
     const body = await res.json().catch(() => ({}));
