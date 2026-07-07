@@ -4,7 +4,7 @@
 //   castle.mjs visit <name>      render another player's castle
 //   castle.mjs history           30-day sparkline of your daily posts
 //   castle.mjs log [name] [url] [backfill=N]   register/login, sync usage now
-import { loadConfig, saveConfig, ensureIdentity, sanitizeName } from "./config.mjs";
+import { loadConfig, saveConfig, ensureToken, sanitizeName, suggestedName } from "./config.mjs";
 import { pendingDeltas, postUsage, recentTranscripts } from "./usage.mjs";
 import { castleText, chronicle, computeScore, fmtTokens, TIERS, tierIndex } from "./render.mjs";
 
@@ -143,7 +143,7 @@ async function cmdHistory() {
 }
 
 async function cmdLog() {
-  let cfg = ensureIdentity(loadConfig());
+  let cfg = loadConfig();
   let backfill = 3;
   for (const a of args) {
     if (/^https?:\/\//i.test(a)) cfg.server = a.replace(/\/$/, "");
@@ -153,7 +153,17 @@ async function cmdLog() {
       if (n) cfg.name = n;
     }
   }
+  // No name yet and none supplied — prompt for one instead of guessing.
+  if (!cfg.name) {
+    die(
+      "pick a name to raise your castle on the realm:\n\n" +
+      "    /castle:log <NAME>            (1-10 letters or numbers)\n" +
+      "    /castle:log " + suggestedName() + " backfill=30   (first time — also imports your recent usage)\n\n" +
+      "  your name is unique across the realm; you can rename later with /castle:log <NEWNAME>."
+    );
+  }
   if (!cfg.server) die("no server configured. Usage: /castle:log <name> [server-url]");
+  cfg = ensureToken(cfg);
   saveConfig(cfg);
 
   const transcripts = recentTranscripts(backfill);

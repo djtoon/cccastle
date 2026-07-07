@@ -33,14 +33,17 @@ export function saveConfig(cfg) {
   return cfg;
 }
 
-// Ensure a local identity exists; generates the secret token on first use.
-export function ensureIdentity(cfg) {
+// Generate the local secret token on first use. Name is claimed separately —
+// we deliberately do NOT auto-assign a name, so /castle:log can prompt for one.
+export function ensureToken(cfg) {
   if (!cfg.token) cfg.token = crypto.randomUUID();
-  if (!cfg.name) {
-    const raw = (process.env.USERNAME || process.env.USER || "PLAYER").toUpperCase();
-    cfg.name = raw.replace(/[^A-Z0-9 ]/g, "").slice(0, 10) || "PLAYER";
-  }
   return cfg;
+}
+
+// A friendly default suggestion (from the OS username) used only in the prompt hint.
+export function suggestedName() {
+  const raw = (process.env.USERNAME || process.env.USER || "PLAYER").toUpperCase();
+  return raw.replace(/[^A-Z0-9 ]/g, "").slice(0, 10) || "PLAYER";
 }
 
 export function sanitizeName(name) {

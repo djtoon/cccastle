@@ -1,73 +1,106 @@
 # Token Castle 🏰
 
-Your Claude Code token usage as a procedural ASCII castle on a shared leaderboard.
-Spend flows in, castle grows — but efficiency wins: a lean player with a hot cache and a
-long streak can out-castle a wasteful whale.
+```
+                    ████
+                    █
+              █ █ █ █ █ █ █
+              ███▓█████▒███
+              ██████░███▓██
+              █████▒░▒█████
+              █████████████
+              ██████░██████
+              ██▒███░██████
+              ███▓███████▒█
+              ██▓███░██████
+              █████████████
+              ██████░██████
+▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+ ░░▒▒░░░▒▒▒▒░░░░░▒▓▓▓▓▓░░░▒░░░▒░░░░░▒▒░
+ ░▒░▒░░░░░░░░░░░▒░▓▓▓▓▓░░░░░▒░░░▒░░▒▒░░
+```
 
-**The loop:** a Stop/SessionEnd hook reads token usage from the session transcript,
-accumulates locally, and posts daily deltas to the realm server. The server aggregates per
-user into daily/monthly sums. Your castle is a pure function of those numbers. Everyone's
-castle sits on a shared web leaderboard, top to bottom.
+**Your Claude Code token usage, reforged into a castle.** Every token you spend lays another
+grey stone. Keep a daily streak and banners fly from your towers. Run a hot cache and a moat
+fills around your walls. Then everyone's castle lines up on a shared leaderboard — and here's
+the twist: **efficiency beats brute force.** A lean builder with a hot cache and a long streak
+can out-castle a wasteful whale. 🐋
 
-**Privacy:** only aggregate token counts and your name leave the machine. Never content,
-never file names, never prompts.
+🏰 **See the realm:** https://token-castle.cccastle.workers.dev/
 
-**The realm:** https://token-castle.cccastle.workers.dev/ — every player ranked top to
-bottom, each with their own rendered castle, chronicle line, and stats.
+---
 
-## Install
+## ⚔️ Quick start
 
-This repo is a Claude Code plugin marketplace. Inside Claude Code:
+**1. Add the marketplace and install** (inside Claude Code):
 
 ```
 /plugin marketplace add djtoon/cccastle
 /plugin install castle@cccastle
 ```
 
-Then restart or reload so the hooks register. Requires Node 18+ on PATH (the hook and
-commands run small Node scripts). The realm server is baked into the plugin — no server setup
-needed to play.
+Then restart / `/reload-plugins` so the hooks wake up. (Needs Node 18+ on your PATH.)
 
-## Claim your name
+**2. Claim your name:**
 
 ```
 /castle:log YOURNAME backfill=30
 ```
 
-This generates a local secret token (`~/.castle/config.json` — that token *is* your login,
-back it up), claims your name (names are unique, up to 10 chars A–Z/0–9), backfills the last
-30 days of transcripts, and syncs. From then on the hook posts automatically as you work.
+That's it. You get a castle, your last 30 days of usage are imported, and from then on it
+tops itself up automatically as you work. Forget to pass a name? The plugin will simply ask
+you to pick one — no accidental logins.
 
-## Commands
+---
+
+## 🧱 What your castle is telling you
+
+| You'll see... | Because... |
+|---|---|
+| 🏰 **Bigger stronghold** — tent → keep → walled keep → castle → citadel | More monthly tokens (1M / 10M / 50M / 200M) |
+| 🚩 **More banners** flying from the towers | Longer daily streak (one per 5 days; 25+ raises the streak standard) |
+| 🗼 **Taller towers** vs. 🧱 **a broader base** | Output-heavy work builds up; input-heavy work builds out |
+| 🌊 **A moat, drawbridge & shield `(+)`** | A hot cache — 80% digs the moat, 90% widens it, 96%+ earns the shield of efficiency |
+
+**Castle score** (the season ranking — resets monthly):
+
+```
+score = (monthTokens / 1M) × (0.5 + cacheRate) × (1 + min(streak,30)/30) × 100
+```
+
+Spend **×** efficiency **×** consistency. That's why the tortoise can beat the hare here.
+
+---
+
+## 📜 Commands
 
 | Command | What it does |
 |---|---|
-| `/castle:me` | Your castle + today's and this month's totals |
-| `/castle:board` | Leaderboard ranked by castle score, plus the reigning castle |
-| `/castle:visit <player>` | Render someone else's castle |
-| `/castle:history` | Last 30 days of posts as a sparkline |
-| `/castle:log [name] [backfill=N]` | Claim/rename your name and force a sync |
+| `/castle:me` | Your castle, with today's and this month's totals |
+| `/castle:board` | The leaderboard by score, the reigning castle, and a link to the realm |
+| `/castle:visit <player>` | Go gawk at someone else's castle |
+| `/castle:history` | Your last 30 days as a sparkline |
+| `/castle:log [name] [backfill=N]` | Claim or rename your castle and force a sync |
 
-## How the numbers map to the castle
+---
 
-| Stat | Effect |
-|---|---|
-| Monthly fresh tokens (input + output + cache-write) | Tier: tent → keep → walled keep → castle → citadel (1M / 10M / 50M / 200M) |
-| Daily streak | One banner per 5 days; 25+ hangs the streak standard from the keep |
-| Output/input ratio | Output-heavy → taller towers; input-heavy → wider base |
-| Cache hit rate | 80%+ moat, 90%+ wide moat + drawbridge, 96%+ shield of efficiency `(+)` — real Claude Code traffic is cache-dominated, so thresholds sit at the top of the realistic range |
+## 🔒 Your privacy is sacred
 
-**Castle score** (season metric, resets monthly):
-`(monthTokens/1M) × (0.5 + cacheRate) × (1 + min(streak,30)/30) × 100`
+Only **aggregate token counts and your chosen name** ever leave your machine. Never your
+content, never file names, never prompts. Usage is read from your local session transcripts,
+counted per day, and only the totals are posted. That's the whole payload.
 
-## Notes
+The hook is also **fail-silent**: offline, server down, or a weird transcript will never break
+a session — unsent counts just wait in `~/.castle/state.json` until next time.
 
-- Usage is read from session transcripts (`~/.claude/projects/**/*.jsonl`), deduped by
-  request id, bucketed per UTC day.
-- The hook is fail-silent by design: offline, server down, or an unparseable transcript never
-  breaks a session; unposted deltas are carried forward in `~/.castle/state.json`.
+---
 
-Run your own realm? Deploy the `worker/` (Cloudflare Worker + D1, free plan is plenty) and
-point the plugin at it with `CASTLE_SERVER` or a URL argument to `/castle:log`.
+## 🛠️ Run your own realm (optional)
 
-MIT.
+The leaderboard is a tiny Cloudflare Worker + D1 database (comfortably within the free plan).
+It isn't bundled in this plugin repo, but the plugin can point anywhere: set `CASTLE_SERVER`
+or pass a URL to `/castle:log <name> <https://your-server/>`. By default it points at the
+public realm above, so you don't need a server at all to play.
+
+---
+
+*Built for fun. May your cache stay warm and your banners fly high.* 🚩 MIT.

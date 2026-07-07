@@ -1,3 +1,6 @@
+# Server lives outside the public plugin repo — kept local only
+worker/
+
 # Cloudflare Wrangler local state — contains your account id + email, never commit
 .wrangler/
 worker/.wrangler/
