@@ -183,25 +183,26 @@ function realmPage(board) {
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Realm — Token Castle</title>
 <style>
-  :root{--bg:#101223;--panel:#181b30;--edge:#262a47;--ink:#c9cee0;--muted:#7e86a3;--torch:#e8a03c}
+  :root{--bg:#000;--panel:#0a0a0d;--edge:#1c1d24;--ink:#d7d9e0;--muted:#8a8f9e;--torch:#e8a03c;--stone:#a6aab5}
   *{box-sizing:border-box}
-  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;margin:0;padding:36px 16px 64px}
-  .wrap{max-width:960px;margin:0 auto}
+  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;
+       margin:0;padding:44px 16px 72px;text-align:center}
+  .wrap{max-width:900px;margin:0 auto}
   .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--torch);font-weight:600}
-  h1{margin:6px 0 4px;font-size:26px;font-weight:650}
-  .sub{color:var(--muted);font-size:14px;margin:0 0 28px;max-width:64ch;line-height:1.5}
-  .player{background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:18px 16px;margin:0 0 18px}
-  .head{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:10px}
+  h1{margin:6px 0 4px;font-size:28px;font-weight:650}
+  .sub{color:var(--muted);font-size:14px;margin:0 auto 32px;max-width:60ch;line-height:1.55}
+  .player{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:20px 16px;margin:0 auto 18px}
+  .head{display:flex;gap:12px;align-items:baseline;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
   .rank{font-family:Consolas,monospace;color:var(--torch);font-weight:700;font-size:18px}
   .pname{font-weight:650;letter-spacing:.06em;font-size:16px}
   .meta{color:var(--muted);font-size:13px}
   .meta b{color:var(--torch)}
   .player:first-of-type{border-color:var(--torch)}
-  pre{font-family:"Cascadia Mono",Consolas,monospace;font-size:12px;line-height:1.18;color:#9aa3b5;
-      overflow-x:auto;margin:0;padding:6px 2px}
-  .chron{color:var(--muted);font-size:13px;font-style:italic;margin:8px 0 0}
-  .empty{color:var(--muted);text-align:center;padding:60px 0}
-  footer{color:#565d7d;font-size:12px;text-align:center;margin-top:30px}
+  pre{display:inline-block;text-align:left;font-family:"Cascadia Mono",Consolas,monospace;
+      font-size:12px;line-height:1.15;color:var(--stone);overflow-x:auto;max-width:100%;margin:0;padding:6px 2px}
+  .chron{color:var(--muted);font-size:13px;font-style:italic;margin:10px auto 0;max-width:62ch}
+  .empty{color:var(--muted);padding:60px 0}
+  footer{color:#565d7d;font-size:12px;margin-top:30px}
 </style></head><body><div class="wrap">
   <div class="eyebrow">Usage heraldry · ${esc(utcMonth())}</div>
   <h1>The Realm</h1>

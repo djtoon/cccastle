@@ -88,25 +88,26 @@ function text(g, x, y, s) {
   for (let i = 0; i < s.length; i++) put(g, x + i, y, s[i]);
 }
 function merlons(w) {
-  const pat = "|;|_";
-  let s = "";
-  while (s.length < w) s += pat;
-  s = s.slice(0, w);
-  return "|" + s.slice(1, w - 1) + "|";
+  // crenellated top: solid teeth (█) with gaps, always solid at both ends
+  const a = [];
+  for (let i = 0; i < w; i++) a.push(i % 2 === 0 ? "█" : " ");
+  a[0] = "█"; a[w - 1] = "█";
+  return a.join("");
 }
 function drawBody(g, x0, x1, topY, botY, R, windows) {
   text(g, x0, topY, merlons(x1 - x0 + 1));
   for (let y = topY + 1; y <= botY; y++) {
-    put(g, x0, y, "|");
-    put(g, x1, y, "|");
-    for (let x = x0 + 1; x < x1; x++)
-      put(g, x, y, R() < 0.05 ? ".:;'"[Math.floor(R() * 4)] : " ");
+    // solid stone wall, with occasional darker courses for texture
+    for (let x = x0; x <= x1; x++) {
+      const t = R();
+      put(g, x, y, t < 0.06 ? "▓" : t < 0.12 ? "▒" : "█");
+    }
   }
   if (windows) {
     const cx = (x0 + x1) >> 1;
     for (let y = topY + 2; y <= botY - 2; y += 3) {
-      put(g, cx - 1, y, "[");
-      put(g, cx, y, "]");
+      put(g, cx, y, "░");
+      put(g, cx, y + 1, "░");
     }
   }
 }
@@ -115,25 +116,25 @@ function drawTower(g, cx, w, h, groundY, R, windows) {
   drawBody(g, x0, x0 + w - 1, groundY - h, groundY - 1, R, windows);
 }
 function drawFlag(g, cx, topY, wide) {
-  put(g, cx, topY - 1, "|");
-  put(g, cx, topY - 2, "|");
-  text(g, cx + 1, topY - 2, wide ? ">>>" : ">>");
+  put(g, cx, topY - 1, "█");
+  put(g, cx, topY - 2, "█");
+  text(g, cx + 1, topY - 2, wide ? "███" : "██");
 }
 function drawGate(g, cx, groundY, w5) {
   if (w5) {
-    text(g, cx - 2, groundY - 3, ".---.");
-    text(g, cx - 2, groundY - 2, "|:::|");
-    text(g, cx - 2, groundY - 1, "|:::|");
+    text(g, cx - 2, groundY - 3, "█████");
+    text(g, cx - 2, groundY - 2, "█░░░█");
+    text(g, cx - 2, groundY - 1, "█░░░█");
   } else {
-    text(g, cx - 1, groundY - 2, ".-.");
-    text(g, cx - 1, groundY - 1, "|:|");
+    text(g, cx - 1, groundY - 2, "███");
+    text(g, cx - 1, groundY - 1, "█░█");
   }
 }
 function drawStreakBanner(g, cx, topY, streak) {
   const n = String(streak).padStart(2, " ");
-  text(g, cx - 2, topY + 2, ".--.");
-  text(g, cx - 2, topY + 3, "|" + n + "|");
-  text(g, cx - 2, topY + 4, "'--'");
+  text(g, cx - 2, topY + 2, "████");
+  text(g, cx - 2, topY + 3, "█" + n + "█");
+  text(g, cx - 2, topY + 4, "▀▀▀▀");
 }
 
 /* ---------- scene composition ---------- */
@@ -168,18 +169,19 @@ export function buildCastle(p) {
     for (let x = 0; x < W; x++)
       if (Rs() < 0.015) put(g, x, y, Rs() < 0.4 ? "*" : ".");
 
-  for (let x = 0; x < W; x++) put(g, x, groundY, "=");
+  for (let x = 0; x < W; x++) put(g, x, groundY, "▄");
 
   const tops = [];
   let keepTopY = null;
 
   if (tier === 0) {
-    text(g, cx - 1, groundY - 3, "/\\");
-    text(g, cx - 2, groundY - 2, "/  \\");
-    text(g, cx - 3, groundY - 1, "/_/\\_\\");
+    put(g, cx, groundY - 3, "█");
+    text(g, cx - 1, groundY - 2, "███");
+    text(g, cx - 2, groundY - 1, "█████");
+    put(g, cx, groundY - 1, "░");            // tent doorway
     tops.push([cx, groundY - 3]);
     if (cacheTier >= 3) {
-      put(g, cx + 7, groundY - 1, "|");
+      put(g, cx + 7, groundY - 1, "█");
       text(g, cx + 6, groundY - 2, "(+)");
     }
   } else if (tier === 1) {
@@ -236,11 +238,11 @@ export function buildCastle(p) {
   const moatRows = cacheTier >= 2 ? 2 : cacheTier === 1 ? 1 : 0;
   for (let m = 1; m <= moatRows; m++)
     for (let x = 1; x < W - 1; x++)
-      put(g, x, groundY + m, R() < 0.18 ? "-" : "~");
+      put(g, x, groundY + m, R() < 0.35 ? "▒" : "░");
   if (cacheTier >= 2)
     for (let m = 1; m <= moatRows; m++)
       for (let x = cx - 2; x <= cx + 2; x++)
-        put(g, x, groundY + m, "=");
+        put(g, x, groundY + m, "▓");
 
   const lines = g.map(row => row.join("").replace(/\s+$/, ""));
   while (lines.length && lines[lines.length - 1] === "") lines.pop();

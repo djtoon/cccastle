@@ -103,7 +103,10 @@ async function cmdBoard() {
   const r = renderPlayer(top.name, top.month, top.streak);
   console.log("\n  Reigning castle:\n");
   console.log(r.text);
-  if (cfg.server) console.log("\n  Browse the full realm: " + cfg.server.replace(/\/$/, "") + "/");
+  const realm = (cfg.server || "").replace(/\/$/, "") + "/";
+  console.log("\n  " + "=".repeat(realm.length + 20));
+  console.log("  Visit the realm ->  " + realm);
+  console.log("  " + "=".repeat(realm.length + 20));
 }
 
 async function cmdVisit() {
