@@ -1,11 +1,9 @@
 {
   "name": "castle",
   "displayName": "Token Castle",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Your Claude Code token usage as a procedural ASCII castle on a shared leaderboard. Spend flows in, castle grows.",
   "author": { "name": "Dan" },
   "license": "MIT",
-  "keywords": ["usage", "tokens", "ascii", "game", "leaderboard"],
-  "commands": ["./commands/"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["usage", "tokens", "ascii", "game", "leaderboard"]
 }
