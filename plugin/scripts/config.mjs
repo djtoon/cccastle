@@ -54,6 +54,21 @@ export function loadState() {
   return readJson(STATE_PATH, { posted: {}, lastPostAt: 0 });
 }
 
+// Skill ledger — written ONLY by the skill hooks (which receive just the skill
+// name in their payload; no transcript content is ever read for this).
+const SKILLS_PATH = path.join(CASTLE_DIR, "skills.json");
+
+export function loadSkillLedger() {
+  return readJson(SKILLS_PATH, { days: {} });
+}
+
+export function saveSkillLedger(ledger) {
+  // prune days older than 60 days
+  const cutoff = new Date(Date.now() - 60 * 86400e3).toISOString().slice(0, 10);
+  for (const day of Object.keys(ledger.days)) if (day < cutoff) delete ledger.days[day];
+  writeJson(SKILLS_PATH, ledger);
+}
+
 export function saveState(state) {
   // prune session entries not seen for 14 days
   const cutoff = Date.now() - 14 * 86400e3;

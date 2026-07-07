@@ -32,7 +32,7 @@ async function main() {
   if (!pending.hasAny) { pending.touch(); return; }
 
   try {
-    const res = await postUsage(cfg, pending.deltas);
+    const res = await postUsage(cfg, pending.deltas, pending.skillDeltas);
     if (res.ok) pending.apply();
   } catch { /* offline or server down — deltas stay pending */ }
 }

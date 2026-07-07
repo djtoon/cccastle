@@ -153,6 +153,24 @@ function drawCampfire(g, x, groundY) {
   put(g, x, groundY - 2, "*");
   text(g, x - 1, groundY - 1, "▄▄▄");
 }
+// guild tents pitched outside the walls — one per distinct skill practiced this month
+function drawGuilds(g, W, groundY, count, name) {
+  const n = Math.min(count, 4);
+  if (n <= 0) return;
+  const R = rng(hash(name + "|guilds"));
+  let placed = 0;
+  for (let tries = 0; tries < 60 && placed < n; tries++) {
+    const left = tries % 2 === 0;
+    const x = left ? 2 + Math.floor(R() * (W >> 2)) : W - 6 - Math.floor(R() * (W >> 2));
+    let free = true;
+    for (let dx = -1; dx <= 3 && free; dx++)
+      if (g[groundY - 1][x + dx] !== " " || g[groundY - 2][x + dx] !== " ") free = false;
+    if (!free) continue;
+    text(g, x + 1, groundY - 2, "▟▙");
+    text(g, x, groundY - 1, "▟█░▙");
+    placed++;
+  }
+}
 // scattered trees on the grounds — more greenery as the estate grows
 function drawFlora(g, W, groundY, tier, name) {
   const R = rng(hash(name + "|flora"));
@@ -198,6 +216,7 @@ export function buildCastle(p) {
   else if (tier === 5) { W = 2 * towerW + (22 + 2 * wb) + 12; tallest = keepH; }
   else if (tier === 6) { W = 2 * towerW + (38 + 2 * wb) + 12; tallest = keepH; }
   else { W = 2 * towerW + (52 + 2 * wb) + 12; tallest = keepH; }
+  if (p.skills > 0) W += 14; // side meadows for the guild camp
 
   const groundY = tallest + 4;
   const H = groundY + 3;
@@ -307,6 +326,7 @@ export function buildCastle(p) {
     }
   }
 
+  drawGuilds(g, W, groundY, p.skills || 0, p.name);
   drawFlora(g, W, groundY, tier, p.name);
   drawBirds(g, W, p.name);
 
@@ -328,6 +348,7 @@ export function chronicle(p, s) {
   const tierPhrase = ["a humble camp", "a lone tent", "a watchtower", "a stone keep",
     "a walled keep", "a castle", "a high castle", "a mighty citadel"][s.tier];
   const bits = [`${s.flags} banner${s.flags === 1 ? "" : "s"} flying`];
+  if (p.skills > 0) bits.push(`${p.skills} guild${p.skills === 1 ? "" : "s"} encamped at its gates`);
   if (s.hb >= 3) bits.push("towers built tall on heavy output");
   if (s.wb >= 3) bits.push("a broad bastion of heavy input");
   if (s.cacheTier === 1) bits.push("ringed by a modest moat");

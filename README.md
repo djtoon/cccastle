@@ -60,6 +60,7 @@ you to pick one — no accidental logins. (Want a different window? Add `backfil
 | 🚩 **More banners** flying from the towers | Longer daily streak (one per 5 days; 25+ raises the streak standard) |
 | 🗼 **Taller towers** vs. 🧱 **a broader base** | Output-heavy work builds up; input-heavy work builds out |
 | 🌊 **A moat, drawbridge & shield `(+)`** | A hot cache — 80% digs the moat, 90% widens it, 96%+ earns the shield of efficiency |
+| ⛺ **Guild tents** camped outside the walls | Distinct skills you used this month — your guild roster (name × uses) shows on your realm page |
 
 **Castle score** (the season ranking — resets monthly):
 
@@ -85,12 +86,18 @@ Spend **×** efficiency **×** consistency. That's why the tortoise can beat the
 
 ## 🔒 Your privacy is sacred
 
-Only **aggregate token counts and your chosen name** ever leave your machine. Never your
-content, never file names, never prompts. Usage is read from your local session transcripts,
-counted per day, and only the totals are posted. That's the whole payload.
+Only **aggregate token counts, your chosen name, and the names of skills you use** ever
+leave your machine. Never your content, never file names, never prompts. Token usage is read
+from your local session transcripts, counted per day, and only the totals are posted.
 
-The hook is also **fail-silent**: offline, server down, or a weird transcript will never break
-a session — unsent counts just wait in `~/.castle/state.json` until next time.
+Skill tracking is **hook-based by design**: the hook receives just the skill's name in its
+event payload — it never reads your conversations. Along with each skill name goes its short
+description and source (read from the skill's own frontmatter), shown on your realm page.
+Don't want skills shared? Opt out with `"skills": false` in `~/.castle/config.json` or
+`CASTLE_NO_SKILLS=1` — everything else keeps working.
+
+The hooks are also **fail-silent**: offline, server down, or a weird transcript will never
+break a session — unsent counts just wait in `~/.castle/` until next time.
 
 ---
 

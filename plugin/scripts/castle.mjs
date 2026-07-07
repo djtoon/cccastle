@@ -45,12 +45,17 @@ function statsFrom(m) {
   return { monthTokens, ratio, cacheRate };
 }
 
-function renderPlayer(name, month, streak) {
+function renderPlayer(name, month, streak, skills) {
   const { monthTokens, ratio, cacheRate } = statsFrom(month);
-  const p = { name, monthTokens, streak, ratio, cacheRate };
+  const p = { name, monthTokens, streak, ratio, cacheRate, skills: (skills || []).length };
   const { text, scene } = castleText(p);
   const score = computeScore({ monthTokens, streak, cacheRate });
-  return { text, scene, p, score, monthTokens, ratio, cacheRate };
+  return { text, scene, p, score, monthTokens, ratio, cacheRate, skillList: skills || [] };
+}
+
+function guildLine(skills) {
+  if (!skills || !skills.length) return "-";
+  return skills.slice(0, 5).map(s => s.skill + " ×" + s.count).join(" · ");
 }
 
 function statLines(r, extra = []) {
@@ -70,14 +75,14 @@ async function cmdMe() {
   const cfg = loadConfig();
   if (!cfg.server || !cfg.token) needSetup();
   const me = await api(cfg, "/api/me?token=" + encodeURIComponent(cfg.token));
-  const r = renderPlayer(me.name, me.month, me.streak);
+  const r = renderPlayer(me.name, me.month, me.streak, me.skills);
   const today = me.today || {};
   const todayTokens = (today.input || 0) + (today.output || 0) + (today.cache_creation || 0);
   console.log(r.text);
   console.log();
   console.log(chronicle(r.p, r.scene));
   console.log();
-  console.log(statLines(r, [["Today", fmtTokens(todayTokens) + " tokens"]]));
+  console.log(statLines(r, [["Guilds", guildLine(r.skillList)], ["Today", fmtTokens(todayTokens) + " tokens"]]));
 }
 
 async function cmdBoard() {
@@ -115,12 +120,12 @@ async function cmdVisit() {
   const name = sanitizeName(args.join(" "));
   if (!name) die("usage: /castle:visit <player>");
   const u = await api(cfg, "/api/player?name=" + encodeURIComponent(name));
-  const r = renderPlayer(u.name, u.month, u.streak);
+  const r = renderPlayer(u.name, u.month, u.streak, u.skills);
   console.log(r.text);
   console.log();
   console.log(chronicle(r.p, r.scene));
   console.log();
-  console.log(statLines(r));
+  console.log(statLines(r, [["Guilds", guildLine(r.skillList)]]));
 }
 
 async function cmdHistory() {
@@ -171,7 +176,7 @@ async function cmdLog() {
   const days = pending.hasAny ? pending.deltas : {};
 
   // Always post (even empty) so registration/rename happens server-side.
-  const res = await postUsage(cfg, days).catch(e => ({ ok: false, body: { error: e.message } }));
+  const res = await postUsage(cfg, days, pending.skillDeltas).catch(e => ({ ok: false, body: { error: e.message } }));
   if (!res.ok) {
     if (res.status === 409) die('the name "' + cfg.name + '" is taken. Pick another: /castle:log <other-name>');
     die("post failed: " + (res.body && res.body.error || ("status " + res.status)));
