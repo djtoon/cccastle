@@ -144,7 +144,7 @@ async function cmdHistory() {
 
 async function cmdLog() {
   let cfg = loadConfig();
-  let backfill = 3;
+  let backfill = 30; // default: import the last 30 days; override with backfill=N
   for (const a of args) {
     if (/^https?:\/\//i.test(a)) cfg.server = a.replace(/\/$/, "");
     else if (/^backfill=\d+$/i.test(a)) backfill = Math.min(90, parseInt(a.split("=")[1], 10));
@@ -157,8 +157,8 @@ async function cmdLog() {
   if (!cfg.name) {
     die(
       "pick a name to raise your castle on the realm:\n\n" +
-      "    /castle:log <NAME>            (1-10 letters or numbers)\n" +
-      "    /castle:log " + suggestedName() + " backfill=30   (first time — also imports your recent usage)\n\n" +
+      "    /castle:log <NAME>          (1-10 letters or numbers)\n" +
+      "    /castle:log " + suggestedName() + "            example — imports your last 30 days automatically\n\n" +
       "  your name is unique across the realm; you can rename later with /castle:log <NEWNAME>."
     );
   }

@@ -43,12 +43,12 @@ Then restart / `/reload-plugins` so the hooks wake up. (Needs Node 18+ on your P
 **2. Claim your name:**
 
 ```
-/castle:log YOURNAME backfill=30
+/castle:log YOURNAME
 ```
 
-That's it. You get a castle, your last 30 days of usage are imported, and from then on it
-tops itself up automatically as you work. Forget to pass a name? The plugin will simply ask
-you to pick one — no accidental logins.
+That's it. You get a castle, your **last 30 days of usage are imported automatically**, and
+from then on it tops itself up as you work. Forget to pass a name? The plugin will simply ask
+you to pick one — no accidental logins. (Want a different window? Add `backfill=N`.)
 
 ---
 
