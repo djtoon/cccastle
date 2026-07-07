@@ -53,9 +53,15 @@ function renderPlayer(name, month, streak, skills) {
   return { text, scene, p, score, monthTokens, ratio, cacheRate, skillList: skills || [] };
 }
 
-function guildLine(skills) {
-  if (!skills || !skills.length) return "-";
-  return skills.slice(0, 5).map(s => s.skill + " ×" + s.count).join(" · ");
+// Full guild roster block, printed below the castle: one line per skill used.
+function guildRoster(skills) {
+  if (!skills || !skills.length) return "";
+  const w = Math.max(...skills.map(s => s.skill.length));
+  const lines = skills.slice(0, 10).map(s => {
+    const desc = s.desc ? "  " + s.desc.slice(0, 60) + (s.desc.length > 60 ? "..." : "") : "";
+    return "    ▟▙ " + s.skill.padEnd(w + 2) + ("×" + s.count).padEnd(6) + desc;
+  });
+  return "\n  Guilds encamped at the gates:\n" + lines.join("\n");
 }
 
 function statLines(r, extra = []) {
@@ -81,8 +87,10 @@ async function cmdMe() {
   console.log(r.text);
   console.log();
   console.log(chronicle(r.p, r.scene));
+  const roster = guildRoster(r.skillList);
+  if (roster) console.log(roster);
   console.log();
-  console.log(statLines(r, [["Guilds", guildLine(r.skillList)], ["Today", fmtTokens(todayTokens) + " tokens"]]));
+  console.log(statLines(r, [["Today", fmtTokens(todayTokens) + " tokens"]]));
 }
 
 async function cmdBoard() {
@@ -124,8 +132,10 @@ async function cmdVisit() {
   console.log(r.text);
   console.log();
   console.log(chronicle(r.p, r.scene));
+  const roster = guildRoster(r.skillList);
+  if (roster) console.log(roster);
   console.log();
-  console.log(statLines(r, [["Guilds", guildLine(r.skillList)]]));
+  console.log(statLines(r));
 }
 
 async function cmdHistory() {
