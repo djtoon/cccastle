@@ -1,0 +1,12 @@
+{
+  "name": "cccastle",
+  "owner": { "name": "djtoon" },
+  "description": "Token Castle — your Claude Code token usage as a procedural ASCII castle on a shared leaderboard.",
+  "plugins": [
+    {
+      "name": "castle",
+      "source": "./plugin",
+      "description": "Your Claude Code token usage as a procedural ASCII castle on a shared leaderboard. Spend flows in, castle grows."
+    }
+  ]
+}

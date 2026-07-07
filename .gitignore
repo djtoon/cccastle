@@ -1,0 +1,19 @@
+# Cloudflare Wrangler local state — contains your account id + email, never commit
+.wrangler/
+worker/.wrangler/
+
+# Local secrets / auth (the castle login token lives in ~/.castle, not here — but just in case)
+.castle/
+.dev.vars
+*.env
+.env
+.env.*
+
+# Dependencies / build
+node_modules/
+dist/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log
