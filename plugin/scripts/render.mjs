@@ -2,11 +2,14 @@
 // A castle is a pure function of {name, monthTokens, streak, ratio, cacheRate}.
 
 export const TIERS = [
-  { min: 0,    name: "Tent",        range: "under 1M" },
-  { min: 1e6,  name: "Keep",        range: "1M-10M" },
-  { min: 1e7,  name: "Walled keep", range: "10M-50M" },
-  { min: 5e7,  name: "Castle",      range: "50M-200M" },
-  { min: 2e8,  name: "Citadel",     range: "200M+" },
+  { min: 0,     name: "Camp",        range: "under 250k" },
+  { min: 250e3, name: "Tent",        range: "250k-1M" },
+  { min: 1e6,   name: "Watchtower",  range: "1M-3M" },
+  { min: 3e6,   name: "Keep",        range: "3M-10M" },
+  { min: 1e7,   name: "Walled keep", range: "10M-30M" },
+  { min: 3e7,   name: "Castle",      range: "30M-100M" },
+  { min: 1e8,   name: "High castle", range: "100M-300M" },
+  { min: 3e8,   name: "Citadel",     range: "300M+" },
 ];
 
 export function tierIndex(tokens) {
@@ -136,6 +139,41 @@ function drawStreakBanner(g, cx, topY, streak) {
   text(g, cx - 2, topY + 3, "█" + n + "█");
   text(g, cx - 2, topY + 4, "▀▀▀▀");
 }
+function drawTent(g, cx, groundY, big) {
+  if (big) {
+    text(g, cx - 1, groundY - 3, "▟█▙");
+    text(g, cx - 2, groundY - 2, "▟███▙");
+    text(g, cx - 3, groundY - 1, "▟██░██▙");
+  } else {
+    text(g, cx - 1, groundY - 2, "▟█▙");
+    text(g, cx - 2, groundY - 1, "▟█░█▙");
+  }
+}
+function drawCampfire(g, x, groundY) {
+  put(g, x, groundY - 2, "*");
+  text(g, x - 1, groundY - 1, "▄▄▄");
+}
+// scattered trees on the grounds — more greenery as the estate grows
+function drawFlora(g, W, groundY, tier, name) {
+  const R = rng(hash(name + "|flora"));
+  const count = 1 + tier + Math.floor(R() * 3);
+  for (let i = 0; i < count; i++) {
+    const x = 2 + Math.floor(R() * (W - 4));
+    if (g[groundY - 1][x] !== " " || g[groundY - 1][x - 1] !== " " || g[groundY - 1][x + 1] !== " ") continue;
+    put(g, x, groundY - 1, "♠");
+    if (R() < 0.4 && g[groundY - 2][x] === " ") put(g, x, groundY - 2, "♠");
+  }
+}
+// a few birds riding the wind above the walls
+function drawBirds(g, W, name) {
+  const R = rng(hash(name + "|birds"));
+  const count = 1 + Math.floor(R() * 2);
+  for (let i = 0; i < count; i++) {
+    const x = 3 + Math.floor(R() * (W - 6));
+    const y = 1 + Math.floor(R() * 3);
+    if (g[y][x] === " " && g[y][x + 1] === " ") { put(g, x, y, "v"); }
+  }
+}
 
 /* ---------- scene composition ---------- */
 // p: { name, monthTokens, streak, ratio (output/input), cacheRate (0..1) }
@@ -145,18 +183,21 @@ export function buildCastle(p) {
   const hb = Math.round(Math.min(Math.max(ratio - 1, 0), 2) * 3);        // 0..6 taller
   const wb = Math.round(Math.min(Math.max(1 / ratio - 1, 0), 2) * 3.5);  // 0..7 wider per side
   const towerW = 7, towerH = 7 + hb;
-  const keepW = tier === 4 ? 15 : 13;
-  const keepH = towerH + (tier === 4 ? 8 : 4);
+  const keepW = tier >= 7 ? 17 : tier >= 5 ? 15 : 13;
+  const keepH = towerH + (tier >= 7 ? 10 : tier === 6 ? 8 : 4);
   // Real Claude Code traffic is cache-dominated (90%+ is typical), so the moat
   // rewards the top of the realistic range: 80% moat, 90% wide moat, 96% shield.
   const cacheTier = p.cacheRate >= 0.96 ? 3 : p.cacheRate >= 0.9 ? 2 : p.cacheRate >= 0.8 ? 1 : 0;
 
   let W, tallest;
-  if (tier === 0) { W = 36; tallest = 6; }
-  else if (tier === 1) { W = 40; tallest = keepH; }
-  else if (tier === 2) { W = keepW + 2 * (9 + wb) + 14; tallest = keepH; }
-  else if (tier === 3) { W = 2 * towerW + (22 + 2 * wb) + 12; tallest = keepH; }
-  else { W = 2 * towerW + (38 + 2 * wb) + 12; tallest = keepH; }
+  if (tier === 0) { W = 30; tallest = 5; }
+  else if (tier === 1) { W = 34; tallest = 7; }
+  else if (tier === 2) { W = 34; tallest = 8 + hb; }
+  else if (tier === 3) { W = 40; tallest = keepH; }
+  else if (tier === 4) { W = keepW + 2 * (9 + wb) + 14; tallest = keepH; }
+  else if (tier === 5) { W = 2 * towerW + (22 + 2 * wb) + 12; tallest = keepH; }
+  else if (tier === 6) { W = 2 * towerW + (38 + 2 * wb) + 12; tallest = keepH; }
+  else { W = 2 * towerW + (52 + 2 * wb) + 12; tallest = keepH; }
 
   const groundY = tallest + 4;
   const H = groundY + 3;
@@ -175,21 +216,24 @@ export function buildCastle(p) {
   let keepTopY = null;
 
   if (tier === 0) {
-    put(g, cx, groundY - 3, "█");
-    text(g, cx - 1, groundY - 2, "███");
-    text(g, cx - 2, groundY - 1, "█████");
-    put(g, cx, groundY - 1, "░");            // tent doorway
-    tops.push([cx, groundY - 3]);
-    if (cacheTier >= 3) {
-      put(g, cx + 7, groundY - 1, "█");
-      text(g, cx + 6, groundY - 2, "(+)");
-    }
+    drawTent(g, cx - 3, groundY, false);
+    drawCampfire(g, cx + 6, groundY);
+    tops.push([cx - 3, groundY - 2]);
   } else if (tier === 1) {
+    drawTent(g, cx, groundY, true);
+    drawCampfire(g, cx + 8, groundY);
+    tops.push([cx, groundY - 3]);
+  } else if (tier === 2) {
+    const h = 8 + hb;
+    drawTower(g, cx, 5, h, groundY, R, true);
+    put(g, cx, groundY - 1, "░"); // doorway
+    tops.push([cx, groundY - h]);
+  } else if (tier === 3) {
     drawTower(g, cx, keepW, keepH, groundY, R, true);
     drawGate(g, cx, groundY, false);
     keepTopY = groundY - keepH;
     tops.push([cx, keepTopY]);
-  } else if (tier === 2) {
+  } else if (tier === 4) {
     const wl = 9 + wb, wallH = 3, bastW = 5, bastH = 5;
     const bl = cx - (keepW >> 1) - wl - 2, br = cx + (keepW >> 1) + wl + 2;
     drawBody(g, cx - (keepW >> 1) - wl, cx + (keepW >> 1) + wl, groundY - wallH, groundY - 1, R, false);
@@ -199,7 +243,7 @@ export function buildCastle(p) {
     drawGate(g, cx, groundY, false);
     keepTopY = groundY - keepH;
     tops.push([cx, keepTopY], [bl, groundY - bastH], [br, groundY - bastH]);
-  } else if (tier === 3) {
+  } else if (tier === 5) {
     const wallLen = 22 + 2 * wb, wallH = 4;
     const S = 2 * towerW + wallLen, x0 = cx - (S >> 1);
     const tl = x0 + (towerW >> 1), tr = x0 + S - 1 - (towerW >> 1);
@@ -210,7 +254,7 @@ export function buildCastle(p) {
     drawGate(g, cx, groundY, true);
     keepTopY = groundY - keepH;
     tops.push([cx, keepTopY], [tl, groundY - towerH], [tr, groundY - towerH]);
-  } else {
+  } else if (tier === 6) {
     const wallLen = 38 + 2 * wb, wallH = 4;
     const S = 2 * towerW + wallLen, x0 = cx - (S >> 1);
     const tl = x0 + (towerW >> 1), tr = x0 + S - 1 - (towerW >> 1);
@@ -225,15 +269,46 @@ export function buildCastle(p) {
     keepTopY = groundY - keepH;
     tops.push([cx, keepTopY], [il, groundY - ih], [ir, groundY - ih],
       [tl, groundY - towerH], [tr, groundY - towerH]);
+  } else {
+    // citadel: keep + inner ring + mid towers + long outer wall
+    const wallLen = 52 + 2 * wb, wallH = 5;
+    const S = 2 * towerW + wallLen, x0 = cx - (S >> 1);
+    const tl = x0 + (towerW >> 1), tr = x0 + S - 1 - (towerW >> 1);
+    const off1 = (keepW >> 1) + 6, il = cx - off1, ir = cx + off1, ih = towerH + 5;
+    const off2 = (keepW >> 1) + 15, ml = cx - off2, mr = cx + off2, mh = towerH + 2;
+    drawTower(g, cx, keepW, keepH, groundY, R, true);
+    drawTower(g, il, towerW, ih, groundY, R, true);
+    drawTower(g, ir, towerW, ih, groundY, R, true);
+    drawTower(g, ml, towerW, mh, groundY, R, true);
+    drawTower(g, mr, towerW, mh, groundY, R, true);
+    drawBody(g, x0, x0 + S - 1, groundY - wallH, groundY - 1, R, false);
+    drawTower(g, tl, towerW, towerH, groundY, R, true);
+    drawTower(g, tr, towerW, towerH, groundY, R, true);
+    drawGate(g, cx, groundY, true);
+    keepTopY = groundY - keepH;
+    tops.push([cx, keepTopY], [il, groundY - ih], [ir, groundY - ih],
+      [ml, groundY - mh], [mr, groundY - mh],
+      [tl, groundY - towerH], [tr, groundY - towerH]);
   }
 
   const flags = Math.min(1 + Math.floor(p.streak / 5), tops.length);
   for (let i = 0; i < flags; i++) drawFlag(g, tops[i][0], tops[i][1], i === 0);
-  if (p.streak >= 25 && keepTopY !== null && tier >= 1)
+  if (p.streak >= 25 && keepTopY !== null && tier >= 3)
     drawStreakBanner(g, cx, keepTopY, p.streak);
 
-  if (cacheTier >= 3 && tier >= 1)
-    text(g, cx - 1, groundY - (tier >= 3 ? 4 : 3), "(+)");
+  if (cacheTier >= 3 && tier >= 2)
+    text(g, cx - 1, groundY - (tier >= 5 ? 5 : tier >= 3 ? 4 : 3), "(+)");
+
+  // torches flanking the gate of the great castles
+  if (tier >= 5) {
+    for (const tx of [cx - 4, cx + 4]) {
+      put(g, tx, groundY - 2, "▌");
+      put(g, tx, groundY - 3, "'");
+    }
+  }
+
+  drawFlora(g, W, groundY, tier, p.name);
+  drawBirds(g, W, p.name);
 
   const moatRows = cacheTier >= 2 ? 2 : cacheTier === 1 ? 1 : 0;
   for (let m = 1; m <= moatRows; m++)
@@ -250,7 +325,8 @@ export function buildCastle(p) {
 }
 
 export function chronicle(p, s) {
-  const tierPhrase = ["a lone tent", "a stone keep", "a walled keep", "a castle", "a mighty citadel"][s.tier];
+  const tierPhrase = ["a humble camp", "a lone tent", "a watchtower", "a stone keep",
+    "a walled keep", "a castle", "a high castle", "a mighty citadel"][s.tier];
   const bits = [`${s.flags} banner${s.flags === 1 ? "" : "s"} flying`];
   if (s.hb >= 3) bits.push("towers built tall on heavy output");
   if (s.wb >= 3) bits.push("a broad bastion of heavy input");
